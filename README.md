@@ -12,6 +12,11 @@ For Minecraft 1.18.2+<br>
 (Never tested earlier versions,
 and probably never will)
 
+This mod is mainly intended to be used in
+modpacks or alongside unaltered datapacks.
+<br>It is only required to be loaded on
+the server side.
+
 Recipes are to be entered in the config
 file by ID, with or without the initial
 `recipes/` at the beginning of the path.

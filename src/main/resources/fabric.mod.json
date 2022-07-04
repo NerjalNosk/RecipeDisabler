@@ -3,13 +3,18 @@
   "id": "recipedisable",
   "version": "${version}",
   "name": "Recipedisable",
-  "description": "A mod that allows to toggle specific recipes",
+  "description": "A simple recipe disabler using a simple config file to avoid complex KubeJS or CraftTweaker script",
   "authors": [
     "Nerjal_Nosk"
   ],
-  "contact": {},
+  "contact": {
+    "email": "nosk.nerjal@gmx.com",
+    "discord": "329574958332248074",
+    "sources": "https://github.com/NerjalNosk/RecipeDisabler",
+    "issues": "https://github.com/NerjalNosk/RecipeDisabler/issues"
+  },
   "license": "MIT",
-  "icon": "assets/icon.png",
+  "icon": "assets/recipe_disable/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -22,6 +27,14 @@
   "depends": {
     "fabricloader": ">=0.14.6",
     "fabric": "*",
-    "minecraft": ">=1.18.2"
+    "minecraft": ">=1.18-"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/ckMCAtVrBW",
+        "modmenu.wiki": "https://github.com/NerjalNosk/RecipeDisabler/wiki"
+      }
+    }
   }
 }
