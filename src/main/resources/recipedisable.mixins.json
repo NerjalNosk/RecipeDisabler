@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.nerjal.recipedisable.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "LifecycledResourceManagerImplMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
