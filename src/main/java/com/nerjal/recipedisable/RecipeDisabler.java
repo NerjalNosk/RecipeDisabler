@@ -4,7 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class RecipeDisable implements ModInitializer {
+public final class RecipeDisabler implements ModInitializer {
 
     // Config constants
     public static final String configFolder = "config";

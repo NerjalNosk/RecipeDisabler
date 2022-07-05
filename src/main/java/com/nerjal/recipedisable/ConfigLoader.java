@@ -31,26 +31,26 @@ public final class ConfigLoader {
 
     private ConfigLoader() {
         ids = new HashSet<>();
-        String path = String.format("%s/%s", RecipeDisable.configFolder, RecipeDisable.configFile);
+        String path = String.format("%s/%s", RecipeDisabler.configFolder, RecipeDisabler.configFile);
         try {
             json = loadOrCreateFile(path,(JsonObject) JsonParser.jsonify(
-                    String.format(templates[RecipeDisable.configVersion], RecipeDisable.configVersionKey)));
+                    String.format(templates[RecipeDisabler.configVersion], RecipeDisabler.configVersionKey)));
         } catch (JsonParseException ignored) {}
         try {
-            if (json.get(RecipeDisable.configVersionKey).getAsInt() > RecipeDisable.configVersion) {
-                RecipeDisable.LOGGER.warn(String.format(
+            if (json.get(RecipeDisabler.configVersionKey).getAsInt() > RecipeDisabler.configVersion) {
+                RecipeDisabler.LOGGER.warn(String.format(
                         "RecipeDisabler config version higher than the mod support (%d > %d). "+
                         "Please update the mod or edit the config",
-                        json.get(RecipeDisable.configVersionKey).getAsInt(),
-                        RecipeDisable.configVersion
+                        json.get(RecipeDisabler.configVersionKey).getAsInt(),
+                        RecipeDisabler.configVersion
                 ));
                 return;
             }
-            while (((JsonNumber)json.get(RecipeDisable.configVersionKey)).getAsInt() < RecipeDisable.configVersion) {
-                updaters[json.get(RecipeDisable.configVersionKey).getAsInt()].run();
+            while (((JsonNumber)json.get(RecipeDisabler.configVersionKey)).getAsInt() < RecipeDisabler.configVersion) {
+                updaters[json.get(RecipeDisabler.configVersionKey).getAsInt()].run();
             }
         } catch (Exception e) {
-            RecipeDisable.LOGGER.warn(
+            RecipeDisabler.LOGGER.warn(
                     "An error occurred trying to update RecipeDisabler config. Loading default template", e);
             return;
         }
@@ -61,7 +61,7 @@ public final class ConfigLoader {
                 } catch (JsonElementTypeException ignored) {}
             });
         } catch (JsonElementTypeException | ChildNotFoundException e) {
-            RecipeDisable.LOGGER.warn("Error while parsing the config file. Loading default template.",e);
+            RecipeDisabler.LOGGER.warn("Error while parsing the config file. Loading default template.",e);
         }
     }
 
@@ -74,7 +74,7 @@ public final class ConfigLoader {
         } catch (JsonParseException | IOException ignored) {
             try {
                 if ((!f.getParentFile().mkdirs()) &! f.createNewFile())
-                    RecipeDisable.LOGGER.warn(
+                    RecipeDisabler.LOGGER.warn(
                         String.format("Potential error while attempting to create file %s", f.getPath()));
                 FileWriter writer = new FileWriter(f);
                 String s = JsonParser.stringify(defaultValue);
@@ -82,7 +82,7 @@ public final class ConfigLoader {
                 writer.flush();
                 writer.close();
             } catch (IOException e) {
-                RecipeDisable.LOGGER.error(
+                RecipeDisabler.LOGGER.error(
                         String.format("Couldn't create file %s, please check edition perms", f.getPath()));
             } catch (RecursiveJsonElementException ignore) {}
         }
@@ -120,6 +120,6 @@ public final class ConfigLoader {
     }
 
     private void update_v0_to_v1() {
-        json.put(RecipeDisable.configVersionKey, new JsonNumber(1));
+        json.put(RecipeDisabler.configVersionKey, new JsonNumber(1));
     }
 }

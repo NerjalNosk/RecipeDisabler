@@ -4,6 +4,8 @@
   "version": "${version}",
   "name": "Recipedisable",
   "description": "A simple recipe disabler using a simple config file to avoid complex KubeJS or CraftTweaker script",
+  "license": "MIT",
+  "icon": "assets/recipe_disable/icon.png",
   "authors": [
     "Nerjal_Nosk"
   ],
@@ -13,12 +15,10 @@
     "sources": "https://github.com/NerjalNosk/RecipeDisabler",
     "issues": "https://github.com/NerjalNosk/RecipeDisabler/issues"
   },
-  "license": "MIT",
-  "icon": "assets/recipe_disable/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.nerjal.recipedisable.RecipeDisable"
+      "com.nerjal.recipedisable.RecipeDisabler"
     ]
   },
   "mixins": [

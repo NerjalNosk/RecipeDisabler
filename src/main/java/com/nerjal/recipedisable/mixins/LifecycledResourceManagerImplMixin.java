@@ -1,7 +1,7 @@
 package com.nerjal.recipedisable.mixins;
 
 import com.nerjal.recipedisable.ConfigLoader;
-import com.nerjal.recipedisable.RecipeDisable;
+import com.nerjal.recipedisable.RecipeDisabler;
 import net.minecraft.resource.LifecycledResourceManagerImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
@@ -26,7 +26,7 @@ public abstract class LifecycledResourceManagerImplMixin implements ResourceMana
         List<Identifier> copy = List.copyOf(res);
         for (Identifier id : copy) {
             if (checkIdDisabled(id)) {
-                RecipeDisable.LOGGER.info(String.format("Recipe %s disabled",id));
+                RecipeDisabler.LOGGER.info(String.format("Recipe %s disabled",id));
                 res.remove(id);
                 set.remove(id);
             }
