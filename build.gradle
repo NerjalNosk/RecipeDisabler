@@ -31,7 +31,7 @@ dependencies {
 
     // JsonLight dependency, for a better JSON parsing
     //implementation "com.github.NerjalNosk:JsonLight:1.1.4"
-    modImplementation(include("com.github.NerjalNosk:JsonLight:1.1.4"))
+    modImplementation(include("com.github.NerjalNosk:JsonLight:${project.jsonlight_version}"))
 }
 
 processResources {

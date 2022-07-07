@@ -19,6 +19,9 @@
   "entrypoints": {
     "main": [
       "com.nerjal.recipedisable.RecipeDisabler"
+    ],
+    "client": [
+      "com.nerjal.recipedisable.RecipeDisablerClient"
     ]
   },
   "mixins": [
