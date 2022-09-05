@@ -26,11 +26,16 @@ public abstract class LifecycledResourceManagerImplMixin implements ResourceMana
         List<Identifier> copy = List.copyOf(res);
         for (Identifier id : copy) {
             if (checkIdDisabled(id)) {
-                RecipeDisabler.LOGGER.info(String.format("Recipe %s disabled",id));
+                if (shouldSpam())
+                    RecipeDisabler.LOGGER.info(String.format("Recipe %s disabled",id));
                 res.remove(id);
                 set.remove(id);
             }
         }
+    }
+
+    private static boolean shouldSpam() {
+        return ConfigLoader.getConfig().spamConsole();
     }
 
     /**
