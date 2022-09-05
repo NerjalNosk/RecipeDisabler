@@ -10,7 +10,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.command.suggestion.SuggestionProviders;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
+import net.minecraft.text.MutableText;
 import org.apache.logging.log4j.Level;
 
 import java.util.Arrays;
@@ -79,12 +80,12 @@ public class DisablerCommand {
     private static int freeDisable(CommandContext<ServerCommandSource> context) {
         String target = StringArgumentType.getString(context, "target").toLowerCase(Locale.ENGLISH);
         if (ConfigLoader.getConfig().disable(target)) {
-            context.getSource().sendFeedback(new LiteralText(
-                    String.format("Resource template %s disabled", target)), true);
+            context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                    String.format("Resource template %s disabled", target))), true);
             RecipeDisabler.disable(context.getSource().getServer(), target);
         } else
-            context.getSource().sendFeedback(new LiteralText(
-                String.format("Unable to disable %s: already disabled", target)), false);
+            context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                String.format("Unable to disable %s: already disabled", target))), false);
         return 0;
     }
 
@@ -93,31 +94,31 @@ public class DisablerCommand {
         if (command.length != 3) throw ERR.create("Invalid input "+String.join(" ", command));
         String target = command[2].toLowerCase(Locale.ENGLISH);
         if (ConfigLoader.getConfig().enable(target))
-            context.getSource().sendFeedback(new LiteralText(
-                    String.format("Resource %s enabled", target)), true);
-        else context.getSource().sendFeedback(new LiteralText(
-                String.format("Unable to enable %s: not disabled", target)), false);
+            context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                    String.format("Resource %s enabled", target))), true);
+        else context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                String.format("Unable to enable %s: not disabled", target))), false);
         return 0;
     }
 
     private static int freeEnable(CommandContext<ServerCommandSource> context) {
         String target = StringArgumentType.getString(context, "target").toLowerCase(Locale.ENGLISH);
         if (ConfigLoader.getConfig().enable(target))
-            context.getSource().sendFeedback(new LiteralText(
-                    String.format("Resource %s enabled", target)), true);
-        else context.getSource().sendFeedback(new LiteralText(
-                String.format("Unable to enable %s: not disabled", target)), false);
+            context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                    String.format("Resource %s enabled", target))), true);
+        else context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                String.format("Unable to enable %s: not disabled", target))), false);
         return 0;
     }
 
     private static int freeKeep(CommandContext<ServerCommandSource> context) {
         String target = StringArgumentType.getString(context, "target").toLowerCase(Locale.ENGLISH);
         if (ConfigLoader.getConfig().keep(target))
-            context.getSource().sendFeedback(new LiteralText(
-                String.format("Resource template %s registered as keep", target)), true);
+            context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                String.format("Resource template %s registered as keep", target))), true);
         else
-            context.getSource().sendFeedback(new LiteralText(
-                String.format("Unable to disable %s: already registered as keep", target)), false);
+            context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                String.format("Unable to disable %s: already registered as keep", target))), false);
         return 0;
     }
 
@@ -127,28 +128,30 @@ public class DisablerCommand {
                 Arrays.copyOfRange(command, 3, command.length)));
         String target = command[2].toLowerCase(Locale.ENGLISH);
         if (ConfigLoader.getConfig().unkeep(target))
-            context.getSource().sendFeedback(new LiteralText(
-                    String.format("Resource %s unregistered from keep", target)), true);
-        else context.getSource().sendFeedback(new LiteralText(
-                String.format("Unable to unregister %s: not registered as keep", target)), false);
+            context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                    String.format("Resource %s unregistered from keep", target))), true);
+        else context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                String.format("Unable to unregister %s: not registered as keep", target))), false);
         return 0;
     }
 
     private static int freeUnkeep(CommandContext<ServerCommandSource> context) {
         String target = StringArgumentType.getString(context, "target").toLowerCase(Locale.ENGLISH);
         if (ConfigLoader.getConfig().unkeep(target))
-            context.getSource().sendFeedback(new LiteralText(
-                    String.format("Resource %s unregistered from keep", target)), true);
-        else context.getSource().sendFeedback(new LiteralText(
-                String.format("Unable to unregister %s: not registered as keep", target)), false);
+            context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                    String.format("Resource %s unregistered from keep", target))), true);
+        else context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                String.format("Unable to unregister %s: not registered as keep", target))), false);
         return 0;
     }
 
     private static int save(CommandContext<ServerCommandSource> context) {
         if (ConfigLoader.getConfig().save() != Success.SUCCESS)
-            context.getSource().sendFeedback(new LiteralText("Something went wrong"), false);
-        else context.getSource().sendFeedback(new LiteralText(String.format("Successfully saved %s/%s",
-                RecipeDisabler.configFolder, RecipeDisabler.configFile)), true);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent("Something went wrong")), false);
+        else context.getSource().sendFeedback(MutableText.of(new LiteralTextContent(
+                String.format("Successfully saved %s/%s", RecipeDisabler.configFolder,
+                        RecipeDisabler.configFile))), true);
         return 0;
     }
 
@@ -159,11 +162,11 @@ public class DisablerCommand {
         } catch (IllegalArgumentException ignored) {}
         List<String> disabled = ConfigLoader.getConfig().disabled();
         if (disabled.size() == 0)
-            context.getSource().sendFeedback(
-                    new LiteralText("There are currently no disabled templates"), false);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent("There are currently no disabled templates")), false);
         else
-            context.getSource().sendFeedback(
-                    new LiteralText(listView(disabled, "Disabled templates", i)),false);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent(listView(disabled, "Disabled templates", i))),false);
         return 0;
     }
 
@@ -174,11 +177,11 @@ public class DisablerCommand {
         } catch (IllegalArgumentException ignored) {}
         List<String> kept = ConfigLoader.getConfig().kept();
         if (kept.size() == 0)
-            context.getSource().sendFeedback(
-                    new LiteralText("There are currently no kept templates"), false);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent("There are currently no kept templates")), false);
         else
-            context.getSource().sendFeedback(
-                    new LiteralText(listView(kept, "Kept templates", i)),false);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent(listView(kept, "Kept templates", i))),false);
         return 0;
     }
 
@@ -189,11 +192,11 @@ public class DisablerCommand {
         } catch (IllegalArgumentException ignored) {}
         List<String> resources = ConfigLoader.getConfig().disabledResources();
         if (resources.size() == 0)
-            context.getSource().sendFeedback(
-                    new LiteralText("There are currently no disabled resources"), false);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent("There are currently no disabled resources")), false);
         else
-            context.getSource().sendFeedback(
-                    new LiteralText(listView(resources, "Disabled resources", i)), false);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent(listView(resources, "Disabled resources", i))), false);
         return 0;
     }
 
@@ -204,11 +207,11 @@ public class DisablerCommand {
         } catch (IllegalArgumentException ignored) {}
         List<String> resources = ConfigLoader.getConfig().keptResources();
         if (resources.size() == 0)
-            context.getSource().sendFeedback(
-                    new LiteralText("There are currently no kept resources"), false);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent("There are currently no kept resources")), false);
         else
-            context.getSource().sendFeedback(
-                    new LiteralText(listView(resources, "Kept resources", i)), false);
+            context.getSource().sendFeedback(MutableText.of(
+                    new LiteralTextContent(listView(resources, "Kept resources", i))), false);
         return 0;
     }
 

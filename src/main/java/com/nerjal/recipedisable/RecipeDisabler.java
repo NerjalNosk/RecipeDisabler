@@ -1,7 +1,7 @@
 package com.nerjal.recipedisable;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.server.MinecraftServer;
@@ -32,7 +32,7 @@ public final class RecipeDisabler implements ModInitializer {
 
         // register command
         CommandRegistrationCallback.EVENT.register(
-                (dispatcher, dedicated) -> DisablerCommand.register(dispatcher));
+                (dispatcher, registryAccess, environment) -> DisablerCommand.register(dispatcher));
         // reload events
         ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> {
             reloading = true;
