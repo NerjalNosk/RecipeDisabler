@@ -12,27 +12,43 @@
    */
   // do not touch, helps the mod keep the config up with its own updates
   "config_version": 3,
-  // whether the config is reloaded when the world reloads
+  /*
+   * Whether the config is reloaded when the world reloads
+   * Default: true
+   */
   "auto_reload": true,
-  // whether the config should be saved before world reload (overrides auto-reload)
+  /*
+   * Whether the config should be saved before world reload (overrides auto-reload)
+   * Default: true
+   */
   "save_on_reload": true,
   /*
    * Whether the mod only accepts resources under the "recipes" base folder.
    * The recipes folder won't be anymore needed in the specified disabled/kept resources
+   * Default: true
    */
   "only_track_recipes_folder": true,
+  /*
+   * Whether should the mod show in the console when a resource's loading is
+   * prevented from being disabled. It is advised to let it to `false` when
+   * playing, to avoid spamming the console, mostly with big modpacks.
+   * Default: false
+   */
+  "log_recipes_disabling": false,
   /*
    * The list of resources that would bypass the disabling.
    * Only useful when disabling while using regex generalisation.
    * Regex is supported as well.
+   * Default: []
    */
   keep_recipes: [
   ],
   /*
    * The list of disabled resources that would be ignored upon resource loading.
    * Resources can be generalized using RegEx.
+   * eg: "namespace:recipes/id_with_{regex|\d}*"
+   * Default: []
    */
   disabled_recipes: [
-    "namespace:recipes/id_with_{regex|\d}*"
   ]
 }

@@ -55,6 +55,7 @@ public final class ConfigLoader {
             () -> {
                 json.add("auto_reload", new JsonBoolean(false));
                 json.add("save_on_reload", new JsonBoolean(false));
+                json.add("log_recipes_disabling", new JsonBoolean(false));
             }
     };
 
@@ -119,7 +120,9 @@ public final class ConfigLoader {
             if (f.exists() &! f.isDirectory() && f.canRead()) {
                 return (JsonObject) JsonParser.parseFile(f);
             }
+            throw new IOException();
         } catch (JsonParseException | IOException e) {
+            RecipeDisabler.LOGGER.info(String.format("No file %s found, creating a new one", f.getPath()));
             try {
                 if ((!f.getParentFile().mkdirs()) &! f.createNewFile())
                     RecipeDisabler.LOGGER.warn(
