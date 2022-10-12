@@ -1,5 +1,6 @@
 package com.nerjal.recipedisable;
 
+import com.nerjal.recipedisable.mixins.compat.CompatMixinConfigPlugin;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -41,6 +42,7 @@ public final class RecipeDisabler implements ModInitializer {
             else if (ConfigLoader.getConfig().autoReload()) ConfigLoader.getConfig().reload();
         });
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resourceManager, success) -> {
+            ConfigLoader.reloadCompat(server);
             reloading = false;
         });
         // server (world) stop event
@@ -52,6 +54,7 @@ public final class RecipeDisabler implements ModInitializer {
                 LOGGER.error(String.format("An error occurred while trying to save %s/%s", CONFIG_FOLDER, CONFIG_FILE));
             }
         }));
+        CompatMixinConfigPlugin.log().forEach(LOGGER::info);
     }
 
     static boolean isReloading() {

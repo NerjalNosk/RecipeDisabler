@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '0.12.1'
     id 'maven-publish'
+    id 'org.sonarqube' version '3.4.0.2513'
 }
 
 version = project.mod_version
@@ -32,6 +33,9 @@ dependencies {
     // JsonLight dependency, for a better JSON parsing
     //implementation "com.github.NerjalNosk:JsonLight:1.1.4"
     modImplementation(include("com.github.NerjalNosk:JsonLight:${project.jsonlight_version}"))
+
+    // BCLib dependency, to fix #2
+    modImplementation "${project.bclib_repo_base}:BCLib:${project.bclib_version}"
 }
 
 processResources {
@@ -60,7 +64,7 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-    archivesBaseName = project.archives_base_name
+    archivesBaseName = "${project.archives_base_name}-Mc${project.minecraft_version}"
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
     // if it is present.
     // If you remove this line, sources will not be generated.

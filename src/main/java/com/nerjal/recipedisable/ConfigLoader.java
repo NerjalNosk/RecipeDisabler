@@ -3,6 +3,7 @@ package com.nerjal.recipedisable;
 import com.nerjal.json.elements.*;
 import com.nerjal.json.JsonParser;
 import com.nerjal.json.parser.FileParser;
+import com.nerjal.recipedisable.compat.CompatRecipe;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.MinecraftServer;
@@ -177,36 +178,66 @@ public final class ConfigLoader {
     }
 
     public boolean checkId(Identifier id) {
-        if (!id.getPath().endsWith(".json")) return false;
-        if (recipesFolderOnly && !id.getPath().startsWith("recipes")) return false;
-        for (String s : keepIds) {
-            String[] ss = s.split(":");
-            String s1 = ss[0];
-            String s2 = ss[1];
-            if (!Pattern.matches(s1, id.getNamespace())) continue;
-            String path = id.getPath().substring(0, id.getPath().length() - 5);
-            String subPath = path.startsWith(VANILLA_RECIPES_DATA_FOLDER) ? path.substring(8) : path;
-            if (Pattern.matches(s2, path) || Pattern.matches(s2, subPath)) {
-                String s3 = id.getPath();
-                KEPT_IDS.add(id.getNamespace()+":"+(s3.startsWith(VANILLA_RECIPES_DATA_FOLDER)?s3.substring(8):s3));
+        return checkId(id, false);
+    }
+
+    public boolean checkId(Identifier id, boolean compat) {
+        if (!compat) {
+            if (!id.getPath().endsWith(".json")) {
+                return false;
+            }
+            if (recipesFolderOnly && !id.getPath().startsWith("recipes")) {
                 return false;
             }
         }
+        if (!checkKeeps(id)) {
+            return false;
+        }
+        return checkDisabled(id);
+    }
+
+    private boolean checkKeeps(Identifier id) {
+        for (String s : keepIds) {
+            String r = idCheck(id, s);
+            if (r != null) {
+                KEPT_IDS.add(r);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkDisabled(Identifier id) {
         for (String s : ids) {
-            String[] ss = s.split(":");
-            String s1 = ss[0];
-            String s2 = ss[1];
-            if (Pattern.matches(s1, id.getNamespace())) {
-                String path = id.getPath().substring(0, id.getPath().length() - 5);
-                String subPath = path.startsWith(VANILLA_RECIPES_DATA_FOLDER) ? path.substring(8) : path;
-                if (Pattern.matches(s2, path) || Pattern.matches(s2, subPath)) {
-                    String s3 = id.getPath();
-                    DISABLED_IDS.add(id.getNamespace()+":"+(s3.startsWith(VANILLA_RECIPES_DATA_FOLDER)?s3.substring(8):s3));
-                    return true;
-                }
+            String r = idCheck(id, s);
+            if (r != null) {
+                DISABLED_IDS.add(r);
+                return true;
             }
         }
         return false;
+    }
+
+    private static String idCheck(Identifier id, String s) {
+        String[] ss = s.split(":");
+        String s1 = ss[0];
+        String s2 = ss[1];
+        if (Pattern.matches(s1, id.getNamespace())) {
+            String path = id.getPath();
+            if (path.endsWith(".json")) {
+                path = path.substring(0, path.length() - 5);
+            }
+            boolean sub = false;
+            String subPath = path;
+            if (path.startsWith(VANILLA_RECIPES_DATA_FOLDER)) {
+                sub = true;
+                subPath = path.substring(VANILLA_RECIPES_DATA_FOLDER.length());
+            }
+            if (Pattern.matches(s2, path) || (sub && Pattern.matches(s2, subPath))) {
+                return id.getNamespace() + ":" + subPath;
+            }
+        }
+        return null;
     }
 
     List<String> disabled() {
@@ -235,6 +266,28 @@ public final class ConfigLoader {
 
     public boolean reloadSave() {
         return reloadSave;
+    }
+
+    public JsonObject debug() {
+        JsonObject j = new JsonObject();
+        try {
+            j.recursivePushAll(json.getObject(DEBUG_OBJECT_KEY));
+        } catch (ChildNotFoundException | JsonElementTypeException e) {
+            return j;
+        }
+        return j;
+    }
+
+    public static String dKey() {
+        return DEBUG_OBJECT_KEY;
+    }
+
+    public static void addCompatRecipe(CompatRecipe recipe) {
+        COMPAT_RECIPES.add(recipe);
+    }
+
+    public static void reloadCompat(MinecraftServer server) {
+        COMPAT_RECIPES.forEach(recipe -> recipe.add(server));
     }
 
     public boolean disable(String target) {

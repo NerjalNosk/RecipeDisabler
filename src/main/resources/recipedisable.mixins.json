@@ -3,8 +3,10 @@
   "minVersion": "0.8",
   "package": "com.nerjal.recipedisable.mixins",
   "compatibilityLevel": "JAVA_17",
+  "plugin": "com.nerjal.recipedisable.mixins.compat.CompatMixinConfigPlugin",
   "mixins": [
-    "LifecycledResourceManagerImplMixin"
+    "LifecycledResourceManagerImplMixin",
+    "compat.bclib.BCLRecipeManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
