@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "recipedisable",
+  "id": "recipe_disabler",
   "version": "${version}",
-  "name": "Recipedisable",
+  "name": "RecipeDisabler",
   "description": "A simple recipe disabler using a simple config file to avoid complex KubeJS or CraftTweaker script",
   "license": "MIT",
   "icon": "assets/recipe_disable/icon.png",
@@ -31,6 +31,9 @@
     "fabricloader": ">=0.14.6",
     "fabric": "*",
     "minecraft": ">=1.18-"
+  },
+  "recommends": {
+    "rei": "*"
   },
   "custom": {
     "modmenu": {

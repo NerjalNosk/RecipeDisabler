@@ -150,7 +150,7 @@ public class DisablerCommand {
         if (ConfigLoader.getConfig().save() != Success.SUCCESS)
             context.getSource().sendFeedback(new LiteralText("Something went wrong"), false);
         else context.getSource().sendFeedback(new LiteralText(String.format("Successfully saved %s/%s",
-                RecipeDisabler.configFolder, RecipeDisabler.configFile)), true);
+                RecipeDisabler.CONFIG_FOLDER, RecipeDisabler.CONFIG_FILE)), true);
         return 0;
     }
 

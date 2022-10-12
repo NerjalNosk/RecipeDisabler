@@ -21,7 +21,7 @@ import static com.nerjal.json.JsonError.*;
 public final class ConfigLoader {
     private static ConfigLoader instance = null;
     public static final String CONFIG_FILE_PATH = String.format(
-            "%s/%s", RecipeDisabler.configFolder, RecipeDisabler.configFile);
+            "%s/%s", RecipeDisabler.CONFIG_FOLDER, RecipeDisabler.CONFIG_FILE);
     private static final String CONFIG_VERSION_KEY = "config_version";
     private static final String DISABLED_LIST_KEY = "disabled_recipes";
     private static final String FORCE_RECIPES_IN_PATH_KEY = "only_track_recipes_folder";
@@ -74,7 +74,7 @@ public final class ConfigLoader {
         try {
             defaultValue = (JsonObject) FileParser.parseStream(new InputStreamReader(
                     ConfigLoader.class.getResourceAsStream(FabricLoader.getInstance().getModContainer(
-                            RecipeDisabler.MOD_ID).get().findPath(RecipeDisabler.configFile).get().toString()
+                            RecipeDisabler.MOD_ID).get().findPath(RecipeDisabler.CONFIG_FILE).get().toString()
                     )));
             json = loadOrCreateFile(CONFIG_FILE_PATH,defaultValue);
         } catch (JsonParseException|NoSuchElementException e) {
@@ -82,16 +82,16 @@ public final class ConfigLoader {
             // Should not happen
         }
         try {
-            if (json.get(CONFIG_VERSION_KEY).getAsInt() > RecipeDisabler.configVersion) {
+            if (json.get(CONFIG_VERSION_KEY).getAsInt() > RecipeDisabler.CONFIG_VERSION) {
                 RecipeDisabler.LOGGER.warn(String.format(
                         "RecipeDisabler config version higher than the mod support (%d > %d). "+
                         "Please update the mod or edit the config",
                         json.get(CONFIG_VERSION_KEY).getAsInt(),
-                        RecipeDisabler.configVersion
+                        RecipeDisabler.CONFIG_VERSION
                 ));
                 return;
             }
-            while (json.getNumber(CONFIG_VERSION_KEY).intValue() < RecipeDisabler.configVersion) {
+            while (json.getNumber(CONFIG_VERSION_KEY).intValue() < RecipeDisabler.CONFIG_VERSION) {
                 updated = true;
                 update(json.getNumber(CONFIG_VERSION_KEY).intValue());
             }
@@ -262,7 +262,9 @@ public final class ConfigLoader {
                     JsonElement elem = iter.next();
                     try {
                         if (elem.getAsString().equals(target)) iter.remove();
-                    } catch (JsonElementTypeException ignored) {}
+                    } catch (JsonElementTypeException ignored) {
+                        // I don't care
+                    }
                 }
             } catch (JsonElementTypeException | ChildNotFoundException ignored) {}
         return b;
@@ -298,7 +300,9 @@ public final class ConfigLoader {
                     } catch (JsonElementTypeException ignored) {
                     }
                 }
-            } catch (JsonElementTypeException | ChildNotFoundException ignored) {}
+            } catch (JsonElementTypeException | ChildNotFoundException ignored) {
+                // I don't care
+            }
         return b;
     }
 

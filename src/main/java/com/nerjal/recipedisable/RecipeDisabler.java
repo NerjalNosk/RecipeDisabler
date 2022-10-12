@@ -16,14 +16,15 @@ import java.util.regex.Pattern;
 public final class RecipeDisabler implements ModInitializer {
 
     // Config constants
-    public static final String configFolder = "config";
-    public static final String MOD_ID = "recipedisable";
-    public static final String configFile = "recipeDisable.json5";
-    public static final int configVersion = 3;
+    public static final String CONFIG_FOLDER = "config";
+    public static final String MOD_ID = "recipe_disabler";
+    public static final String MOD_NAME = "recipedisabler";
+    public static final String CONFIG_FILE = "recipeDisable.json5";
+    public static final int CONFIG_VERSION = 3;
     private static boolean reloading = false;
     private static final ReentrantLock lock = new ReentrantLock();
 
-    public static final Logger LOGGER = LogManager.getLogger("ResourceDisabler");
+    public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
     @Override
     public void onInitialize() {
@@ -46,9 +47,9 @@ public final class RecipeDisabler implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register((server -> {
             Success success = ConfigLoader.getConfig().save(server);
             if (success == Success.SUCCESS)
-                LOGGER.info(String.format("Successfully saved %s/%s", configFolder, configFile));
+                LOGGER.info(String.format("Successfully saved %s/%s", CONFIG_FOLDER, CONFIG_FILE));
             else if (success == Success.FAIL) {
-                LOGGER.error(String.format("An error occurred while trying to save %s/%s", configFolder, configFile));
+                LOGGER.error(String.format("An error occurred while trying to save %s/%s", CONFIG_FOLDER, CONFIG_FILE));
             }
         }));
     }

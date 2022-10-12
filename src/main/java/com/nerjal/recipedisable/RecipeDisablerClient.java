@@ -15,10 +15,10 @@ public class RecipeDisablerClient implements ClientModInitializer {
                 Success success = ConfigLoader.getConfig().save(client);
                 if (success == Success.SUCCESS)
                     RecipeDisabler.LOGGER.info(String.format("Successfully saved %s/%s",
-                            RecipeDisabler.configFolder, RecipeDisabler.configFile));
+                            RecipeDisabler.CONFIG_FOLDER, RecipeDisabler.CONFIG_FILE));
                 else if (success == Success.FAIL) {
                     RecipeDisabler.LOGGER.error(String.format("An error occurred while trying to save %s/%s",
-                            RecipeDisabler.configFolder, RecipeDisabler.configFile));
+                            RecipeDisabler.CONFIG_FOLDER, RecipeDisabler.CONFIG_FILE));
                 }
             }
         );
