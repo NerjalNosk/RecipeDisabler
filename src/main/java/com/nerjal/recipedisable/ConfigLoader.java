@@ -19,26 +19,29 @@ import java.util.regex.Pattern;
 import static com.nerjal.json.JsonError.*;
 
 public final class ConfigLoader {
-    private static ConfigLoader INSTANCE = null;
-    public static final String configFilePath = String.format(
+    private static ConfigLoader instance = null;
+    public static final String CONFIG_FILE_PATH = String.format(
             "%s/%s", RecipeDisabler.configFolder, RecipeDisabler.configFile);
-    private static final String configVersionKey = "config_version";
-    private static final String disabledListKey = "disabled_recipes";
-    private static final String forceRecipesInPathKey = "only_track_recipes_folder";
-    private static final String dontDisableListKey = "keep_recipes";
-    private static final String autoReloadKey = "auto_reload";
-    private static final String reloadSaveKey = "save_on_reload";
-    private static final String logDisablingKey = "log_recipes_disabling";
-    private static final String defaultConfigsFolder = "configs";
-    private static final Set<String> disabledIds = new HashSet<>();
-    private static final Set<String> keptIds = new HashSet<>();
+    private static final String CONFIG_VERSION_KEY = "config_version";
+    private static final String DISABLED_LIST_KEY = "disabled_recipes";
+    private static final String FORCE_RECIPES_IN_PATH_KEY = "only_track_recipes_folder";
+    private static final String DONT_DISABLE_LIST_KEY = "keep_recipes";
+    private static final String AUTO_RELOAD_KEY = "auto_reload";
+    private static final String RELOAD_SAVE_KEY = "save_on_reload";
+    private static final String LOG_DISABLING_KEY = "log_recipes_disabling";
+    private static final String DEBUG_OBJECT_KEY = "debug";
+    private static final String DEFAULT_CONFIGS_FOLDER = "configs";
+    private static final String VANILLA_RECIPES_DATA_FOLDER = "recipes/";
+    private static final Set<String> DISABLED_IDS = new HashSet<>();
+    private static final Set<String> KEPT_IDS = new HashSet<>();
+    private static final Set<CompatRecipe> COMPAT_RECIPES = new HashSet<>();
 
     private boolean autoReload;
     private boolean reloadSave;
     private final HashSet<String> ids;
     private final HashSet<String> keepIds;
     private boolean recipesFolderOnly;
-    private boolean log_disabling;
+    private boolean logDisabling;
     private JsonObject json;
     private boolean updated = false;
     private final ReentrantLock lock = new ReentrantLock();
@@ -50,7 +53,9 @@ public final class ConfigLoader {
                     json.rename("disabled_ids", "disabled_recipes");
                     json.add("only_track_recipes_folder", new JsonBoolean(true));
                     json.add("keep_recipes", new JsonArray());
-                } catch (ChildNotFoundException ignored) {}
+                } catch (ChildNotFoundException ignored) {
+                    // Will not happen (in theory)
+                }
             },
             () -> {
                 json.add("auto_reload", new JsonBoolean(false));
@@ -59,10 +64,10 @@ public final class ConfigLoader {
             }
     };
 
-    @SuppressWarnings({"ConstantConditions", "OptionalGetWithoutIsPresent"})
+    @SuppressWarnings({"ConstantConditions"})
     private ConfigLoader() {
-        keptIds.clear();
-        disabledIds.clear();
+        KEPT_IDS.clear();
+        DISABLED_IDS.clear();
         ids = new HashSet<>();
         keepIds = new HashSet<>();
         JsonObject defaultValue = null;
@@ -71,21 +76,24 @@ public final class ConfigLoader {
                     ConfigLoader.class.getResourceAsStream(FabricLoader.getInstance().getModContainer(
                             RecipeDisabler.MOD_ID).get().findPath(RecipeDisabler.configFile).get().toString()
                     )));
-            json = loadOrCreateFile(configFilePath,defaultValue);
-        } catch (JsonParseException ignored) {}
+            json = loadOrCreateFile(CONFIG_FILE_PATH,defaultValue);
+        } catch (JsonParseException|NoSuchElementException e) {
+            RecipeDisabler.LOGGER.warn("Something happened where it wasn't supposed to",e);
+            // Should not happen
+        }
         try {
-            if (json.get(configVersionKey).getAsInt() > RecipeDisabler.configVersion) {
+            if (json.get(CONFIG_VERSION_KEY).getAsInt() > RecipeDisabler.configVersion) {
                 RecipeDisabler.LOGGER.warn(String.format(
                         "RecipeDisabler config version higher than the mod support (%d > %d). "+
                         "Please update the mod or edit the config",
-                        json.get(configVersionKey).getAsInt(),
+                        json.get(CONFIG_VERSION_KEY).getAsInt(),
                         RecipeDisabler.configVersion
                 ));
                 return;
             }
-            while (json.getNumber(configVersionKey).intValue() < RecipeDisabler.configVersion) {
+            while (json.getNumber(CONFIG_VERSION_KEY).intValue() < RecipeDisabler.configVersion) {
                 updated = true;
-                update(json.getNumber(configVersionKey).intValue());
+                update(json.getNumber(CONFIG_VERSION_KEY).intValue());
             }
         } catch (Exception e) {
             RecipeDisabler.LOGGER.warn(
@@ -93,23 +101,27 @@ public final class ConfigLoader {
             return;
         }
         try {
-            json.get(disabledListKey).getAsJsonArray().forEach(elem -> {
+            json.get(DISABLED_LIST_KEY).getAsJsonArray().forEach(elem -> {
                 try {
                     ids.add(elem.getAsString().toLowerCase(Locale.ENGLISH));
-                } catch (JsonElementTypeException ignored) {}
+                } catch (JsonElementTypeException ignored) {
+                    // We don't care
+                }
             });
-            json.get(dontDisableListKey).getAsJsonArray().forEach(elem -> {
+            json.get(DONT_DISABLE_LIST_KEY).getAsJsonArray().forEach(elem -> {
                 try {
                     keepIds.add(elem.getAsString().toLowerCase(Locale.ENGLISH));
-                } catch (JsonElementTypeException ignored) {}
+                } catch (JsonElementTypeException ignored) {
+                    // We don't care either
+                }
             });
-            recipesFolderOnly = json.getBoolean(forceRecipesInPathKey);
-            autoReload = json.contains(autoReloadKey) ?
-                    json.getBoolean(autoReloadKey) : defaultValue.getBoolean(autoReloadKey);
-            reloadSave = json.contains(reloadSaveKey) ?
-                    json.getBoolean(reloadSaveKey) : defaultValue.getBoolean(reloadSaveKey);
-            log_disabling = json.contains(logDisablingKey) ?
-                    json.getBoolean(logDisablingKey) : defaultValue.getBoolean(logDisablingKey);
+            recipesFolderOnly = json.getBoolean(FORCE_RECIPES_IN_PATH_KEY);
+            autoReload = json.contains(AUTO_RELOAD_KEY) ?
+                    json.getBoolean(AUTO_RELOAD_KEY) : defaultValue.getBoolean(AUTO_RELOAD_KEY);
+            reloadSave = json.contains(RELOAD_SAVE_KEY) ?
+                    json.getBoolean(RELOAD_SAVE_KEY) : defaultValue.getBoolean(RELOAD_SAVE_KEY);
+            logDisabling = json.contains(LOG_DISABLING_KEY) ?
+                    json.getBoolean(LOG_DISABLING_KEY) : defaultValue.getBoolean(LOG_DISABLING_KEY);
         } catch (JsonElementTypeException | ChildNotFoundException e) {
             RecipeDisabler.LOGGER.warn("Error while parsing the config file. Loading default template.",e);
         }
@@ -117,14 +129,14 @@ public final class ConfigLoader {
 
     public static JsonObject loadOrCreateFile(File f, JsonObject defaultValue) {
         try {
-            if (f.exists() &! f.isDirectory() && f.canRead()) {
+            if (f.exists() && (!f.isDirectory()) && f.canRead()) {
                 return (JsonObject) JsonParser.parseFile(f);
             }
             throw new IOException();
         } catch (JsonParseException | IOException e) {
             RecipeDisabler.LOGGER.info(String.format("No file %s found, creating a new one", f.getPath()));
             try {
-                if ((!f.getParentFile().mkdirs()) &! f.createNewFile())
+                if ((!f.getParentFile().mkdirs()) && !f.createNewFile())
                     RecipeDisabler.LOGGER.warn(
                         String.format("Potential error while attempting to create file %s", f.getPath()));
                 FileWriter writer = new FileWriter(f);
@@ -136,7 +148,9 @@ public final class ConfigLoader {
                 RecipeDisabler.LOGGER.error(
                         String.format("Couldn't create file %s, please check edition perms", f.getPath()));
                 RecipeDisabler.LOGGER.error(ex);
-            } catch (RecursiveJsonElementException ignored) {}
+            } catch (RecursiveJsonElementException ignored) {
+                // Will not happen
+            }
         }
         return defaultValue;
     }
@@ -147,34 +161,34 @@ public final class ConfigLoader {
 
     public static ConfigLoader getConfig() {
         init();
-        return INSTANCE;
+        return instance;
     }
 
     public static void init() {
-        if (INSTANCE == null) {
-            INSTANCE = new ConfigLoader();
+        if (instance == null) {
+            instance = new ConfigLoader();
         }
     }
 
     void reload() {
-        if (autoReload &! reloadSave) {
-            INSTANCE = new ConfigLoader();
+        if (autoReload && !reloadSave) {
+            instance = new ConfigLoader();
         }
     }
 
     public boolean checkId(Identifier id) {
         if (!id.getPath().endsWith(".json")) return false;
-        if (recipesFolderOnly &! id.getPath().startsWith("recipes")) return false;
+        if (recipesFolderOnly && !id.getPath().startsWith("recipes")) return false;
         for (String s : keepIds) {
             String[] ss = s.split(":");
             String s1 = ss[0];
             String s2 = ss[1];
             if (!Pattern.matches(s1, id.getNamespace())) continue;
             String path = id.getPath().substring(0, id.getPath().length() - 5);
-            String subPath = path.startsWith("recipes/") ? path.substring(8) : path;
+            String subPath = path.startsWith(VANILLA_RECIPES_DATA_FOLDER) ? path.substring(8) : path;
             if (Pattern.matches(s2, path) || Pattern.matches(s2, subPath)) {
                 String s3 = id.getPath();
-                keptIds.add(id.getNamespace()+":"+(s3.startsWith("recipes/")?s3.substring(8):s3));
+                KEPT_IDS.add(id.getNamespace()+":"+(s3.startsWith(VANILLA_RECIPES_DATA_FOLDER)?s3.substring(8):s3));
                 return false;
             }
         }
@@ -184,10 +198,10 @@ public final class ConfigLoader {
             String s2 = ss[1];
             if (Pattern.matches(s1, id.getNamespace())) {
                 String path = id.getPath().substring(0, id.getPath().length() - 5);
-                String subPath = path.startsWith("recipes/") ? path.substring(8) : path;
+                String subPath = path.startsWith(VANILLA_RECIPES_DATA_FOLDER) ? path.substring(8) : path;
                 if (Pattern.matches(s2, path) || Pattern.matches(s2, subPath)) {
                     String s3 = id.getPath();
-                    disabledIds.add(id.getNamespace()+":"+(s3.startsWith("recipes/")?s3.substring(8):s3));
+                    DISABLED_IDS.add(id.getNamespace()+":"+(s3.startsWith(VANILLA_RECIPES_DATA_FOLDER)?s3.substring(8):s3));
                     return true;
                 }
             }
@@ -200,7 +214,7 @@ public final class ConfigLoader {
     }
 
     List<String> disabledResources() {
-        return new ArrayList<>(disabledIds);
+        return new ArrayList<>(DISABLED_IDS);
     }
 
     List<String> kept() {
@@ -208,15 +222,15 @@ public final class ConfigLoader {
     }
 
     List<String> keptResources() {
-        return new ArrayList<>(keptIds);
+        return new ArrayList<>(KEPT_IDS);
     }
 
     public boolean spamConsole() {
-        return log_disabling;
+        return logDisabling;
     }
 
     public boolean autoReload() {
-        return autoReload &! reloadSave;
+        return autoReload && !reloadSave;
     }
 
     public boolean reloadSave() {
@@ -230,7 +244,7 @@ public final class ConfigLoader {
         boolean b = ids.add(target);
         if (b)
             try {
-                json.getArray(disabledListKey).add(new JsonString(s[0]+":"+s[1]));
+                json.getArray(DISABLED_LIST_KEY).add(new JsonString(s[0]+":"+s[1]));
             } catch (ChildNotFoundException | JsonElementTypeException ignored) {}
         return b;
     }
@@ -242,7 +256,7 @@ public final class ConfigLoader {
         boolean b = ids.remove(target);
         if (b)
             try {
-                JsonArray array = json.getArray(disabledListKey);
+                JsonArray array = json.getArray(DISABLED_LIST_KEY);
                 Iterator<JsonElement> iter = array.iterator();
                 while (iter.hasNext()) {
                     JsonElement elem = iter.next();
@@ -261,8 +275,10 @@ public final class ConfigLoader {
         boolean b = keepIds.add(target);
         if (b)
             try {
-                json.getArray(dontDisableListKey).add(new JsonString(s[0]+":"+s[1]));
-            } catch (ChildNotFoundException | JsonElementTypeException ignored) {}
+                json.getArray(DONT_DISABLE_LIST_KEY).add(new JsonString(s[0]+":"+s[1]));
+            } catch (ChildNotFoundException | JsonElementTypeException ignored) {
+                // I don't care
+            }
         return b;
     }
 
@@ -273,7 +289,7 @@ public final class ConfigLoader {
         boolean b = keepIds.remove(target);
         if (b)
             try {
-                JsonArray array = json.getArray(dontDisableListKey);
+                JsonArray array = json.getArray(DONT_DISABLE_LIST_KEY);
                 Iterator<JsonElement> iter = array.iterator();
                 while (iter.hasNext()) {
                     JsonElement elem = iter.next();
@@ -287,19 +303,19 @@ public final class ConfigLoader {
     }
 
     Success save(MinecraftServer server) {
-        if (!server.isStopping() &! RecipeDisabler.isReloading()) return Success.HALT;
-        return save(new File(configFilePath));
+        if (!server.isStopping() && !RecipeDisabler.isReloading()) return Success.HALT;
+        return save(new File(CONFIG_FILE_PATH));
     }
 
     Success save(MinecraftClient client) {
         if (client.isRunning()) return Success.HALT;
-        return save(new File(configFilePath));
+        return save(new File(CONFIG_FILE_PATH));
     }
 
     Success save() {
         if (lock.isLocked())
             return Success.FAIL;
-        return save(new File(configFilePath));
+        return save(new File(CONFIG_FILE_PATH));
     }
 
     private Success save(File f) {
@@ -325,9 +341,9 @@ public final class ConfigLoader {
         JsonObject object = (JsonObject) FileParser.parseStream(new InputStreamReader(
                 ConfigLoader.class.getResourceAsStream(FabricLoader.getInstance().getModContainer(
                         RecipeDisabler.MOD_ID).get().findPath(
-                                String.format("%s/v%d.json5", defaultConfigsFolder, v+1)).get().toString()
+                                String.format("%s/v%d.json5", DEFAULT_CONFIGS_FOLDER, v+1)).get().toString()
                 )));
-        json.set(configVersionKey, new JsonNumber(v+1));
+        json.set(CONFIG_VERSION_KEY, new JsonNumber(v+1));
         updaters[v].run();
         object.push(json);
         json = object;
