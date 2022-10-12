@@ -25,25 +25,14 @@ public abstract class LifecycledResourceManagerImplMixin implements ResourceMana
                                     List<Identifier> res) {
         List<Identifier> copy = List.copyOf(res);
         for (Identifier id : copy) {
-            if (checkIdDisabled(id)) {
-                if (shouldSpam())
-                    RecipeDisabler.LOGGER.info(String.format("Recipe %s disabled",id));
+            if (ConfigLoader.getConfig().checkId(id)) {
+                if (ConfigLoader.getConfig().spamConsole()) {
+                    String s = String.format("[%s] Recipe %s disabled", RecipeDisabler.MOD_ID, id);
+                    RecipeDisabler.LOGGER.info(s);
+                }
                 res.remove(id);
                 set.remove(id);
             }
         }
-    }
-
-    private static boolean shouldSpam() {
-        return ConfigLoader.getConfig().spamConsole();
-    }
-
-    /**
-     * Queries the config to check if the specified ID is set as disabled
-     * @param id the ID to query the config for
-     * @return {@code true} if the specified ID is disabled, {@code false} otherwise
-     */
-    private static boolean checkIdDisabled(Identifier id) {
-        return ConfigLoader.getConfig().checkId(id);
     }
 }
